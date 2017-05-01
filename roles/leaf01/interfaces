@@ -48,6 +48,7 @@ iface swp50
 auto swp51
 iface swp51
   alias to Spine01
+  address 172.16.255.1/30
 
 # Port to Spine02
 auto swp52
