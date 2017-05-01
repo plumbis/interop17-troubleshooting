@@ -1,0 +1,55 @@
+#########
+## Configured by Ansible
+#########
+
+# Loopback interface
+auto lo
+iface lo inet loopback
+  address 10.100.100.1/32
+  address 10.255.255.10/32
+  alias loopback interface
+
+# Management interface
+auto eth0
+iface eth0 inet dhcp
+  alias management interface
+
+# Port to Leaf01
+auto swp1
+iface swp1
+  alias to Leaf01
+
+# Port to Leaf02
+auto swp2
+iface swp2
+  alias to Leaf02
+
+# Port to Leaf03
+auto swp3
+iface swp3
+  alias to Leaf03
+
+# Port to Leaf04
+auto swp4
+iface swp4
+  alias to Leaf04
+
+# Port to Exit01
+auto swp29
+iface swp29
+  alias to Exit01
+
+# Port to Exit02
+auto swp30
+iface swp30
+  alias to Exit02
+
+# Port to Spine02
+auto swp31
+iface swp31
+  alias to Spine02
+
+# Port to Spine02
+auto swp32
+iface swp32
+  alias to Spine02

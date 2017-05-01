@@ -1,0 +1,232 @@
+---
+l3_interfaces:
+  peerlink:
+    leaf01: "169.254.1.1"
+    leaf02: "169.254.1.2"
+    leaf03: "169.254.1.1"
+    leaf04: "169.254.1.2"
+    exit01: "169.254.1.1"
+    exit02: "169.254.1.2"
+
+  loopback:
+    spine01:
+      ipv4: "10.100.100.1"
+      anycast: "10.255.255.10"
+
+    spine02:
+      ipv4: "10.100.100.2"
+      anycast: "10.255.255.10"
+
+    leaf01:
+      ipv4: "10.1.1.1"
+
+    leaf02:
+      ipv4: "10.1.1.2"
+
+    leaf03:
+      ipv4: "10.1.1.3"
+
+    leaf04:
+      ipv4: "10.1.1.4"
+
+    exit01:
+      ipv4: "10.255.255.1"
+
+    exit02:
+      ipv4: "10.255.255.2"
+
+bonds:
+  leaf01:
+    bond01: ["swp1"]
+    bond02: ["swp2"]
+    peerlink: ["swp49", "swp50"]
+
+  leaf02:
+    bond01: ["swp1"]
+    bond02: ["swp2"]
+    peerlink: ["swp49", "swp50"]
+
+  leaf03:
+    bond03: ["swp1"]
+    bond04: ["swp2"]
+    peerlink: ["swp49", "swp50"]
+
+  leaf04:
+    bond03: ["swp1"]
+    bond04: ["swp2"]
+    peerlink: ["swp49", "swp50"]
+
+  exit01:
+    bond0: ["swp44"]
+    peerlink: ["swp49", "swp50"]
+
+  exit02:
+    bond0: ["swp44"]
+    peerlink: ["swp49", "swp50"]
+
+bgp:
+  spine01:
+    peers: ["swp1", "swp2", "swp3", "swp4"]
+    asn: 65531
+
+  spine02:
+    peers: ["swp1", "swp2", "swp3", "swp4"]
+    asn: 65532
+
+  leaf01:
+    peers: ["swp51", "swp52"]
+    asn: 65001
+
+  leaf02:
+    peers: ["swp51", "swp52"]
+    asn: 65002
+
+  leaf03:
+    peers: ["swp51", "swp52"]
+    asn: 65003
+
+  leaf04:
+    peers: ["swp51", "swp52"]
+    asn: 65004
+
+  exit01:
+    peers: ["swp51", "swp52"]
+    asn: 65501
+
+  exit02:
+    peers: ["swp51", "swp52"]
+    asn: 65502
+
+vxrd:
+  vnis: [13, 24]
+  service_node: "10.255.255.10"
+  # These are the addresses to replicate to for HREP.
+  # For VxLAN Active/Active it is the anycast address
+  leaf01: ["10.10.10.3", "10.10.10.2"]
+
+  leaf02: ["10.10.10.3", "10.10.10.2"]
+
+  leaf03: ["10.10.10.1", "10.10.10.3"]
+
+  leaf04: ["10.10.10.1", "10.10.10.3"]
+
+  exit01: ["10.10.10.1", "10.10.10.2"]
+
+  exit02: ["10.10.10.1", "10.10.10.2"]
+
+vxsnd:
+  anycast: "10.255.255.10"
+  peers: ["10.100.100.1", "10.100.100.2"]
+  spine01:
+    local_address: "10.100.100.1"
+  spine02:
+    local_address: "10.100.100.2"
+
+clag:
+  leaf01:
+    priority: 100
+    role: "primary"
+    system_mac: "44:39:39:ff:40:94"
+    anycast: "10.10.10.1"
+    backup_ip: "10.1.1.2"
+    peer_ip: "169.254.1.2"
+
+  leaf02:
+    priority: 200
+    role: "secondary"
+    system_mac: "44:39:39:ff:40:94"
+    anycast: "10.10.10.1"
+    backup_ip: "10.1.1.1"
+    peer_ip: "169.254.1.1"
+
+  leaf03:
+    priority: 100
+    role: "primary"
+    system_mac: "44:39:39:ff:40:95"
+    anycast: "10.10.10.2"
+    backup_ip: "10.1.1.4"
+    peer_ip: "169.254.1.2"
+
+  leaf04:
+    priority: 200
+    role: "secondary"
+    system_mac: "44:39:39:ff:40:95"
+    anycast: "10.10.10.2"
+    backup_ip: "10.1.1.3"
+    peer_ip: "169.254.1.1"
+
+  exit01:
+    priority: 100
+    role: "primary"
+    system_mac: "44:39:39:ff:40:96"
+    anycast: "10.10.10.3"
+    backup_ip: "10.255.255.2"
+    peer_ip: "169.254.1.2"
+
+  exit02:
+    priority: 200
+    system_mac: "44:39:39:ff:40:96"
+    role: "secondary"
+    anycast: "10.10.10.3"
+    backup_ip: "10.255.255.1"
+    peer_ip: "169.254.1.1"
+
+stp:
+  # VLAN list matches against 'bridge -j vlan show'
+  # Be sure to consider if the native VLAN (1) is carried
+  leaf01:
+    peerlink: [1, 13, 24]
+    bond01: [13]
+    bond02: [24]
+    vni13: [13]
+    vni24: [24]
+
+  leaf02:
+    peerlink: [1, 13, 24]
+    bond01: [13]
+    bond02: [24]
+    vni13: [13]
+    vni24: [24]
+
+  leaf03:
+    peerlink: [1, 13, 24]
+    bond03: [13]
+    bond04: [24]
+    vni13: [13]
+    vni24: [24]
+
+  leaf04:
+    peerlink: [1, 13, 24]
+    bond03: [13]
+    bond04: [24]
+    vni13: [13]
+    vni24: [24]
+
+  exit01:
+    peerlink: [1, 13, 24]
+    bond0: [1, 13, 24]
+    vni13: [13]
+    vni24: [24]
+
+  exit02:
+    peerlink: [1, 13, 24]
+    bond0: [1, 13, 24]
+    vni13: [13]
+    vni24: [24]
+
+interfaces:
+  leaf01: ["swp1", "swp2", "swp49", "swp50", "swp51", "swp52"]
+
+  leaf02: ["swp1", "swp2", "swp49", "swp50", "swp51", "swp52"]
+
+  leaf03: ["swp1", "swp2", "swp49", "swp50", "swp51", "swp52"]
+
+  leaf04: ["swp1", "swp2", "swp49", "swp50", "swp51", "swp52"]
+
+  exit01: ["swp1", "swp44", "swp49", "swp50", "swp51", "swp52"]
+
+  exit02: ["swp1", "swp44", "swp49", "swp50", "swp51", "swp52"]
+
+  spine01: ["swp1", "swp2", "swp3", "swp4", "swp29", "swp30", "swp31", "swp32"]
+
+  spine02: ["swp1", "swp2", "swp3", "swp4", "swp29", "swp30", "swp31", "swp32"]

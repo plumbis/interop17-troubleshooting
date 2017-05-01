@@ -1,0 +1,51 @@
+---
+- hosts: localhost
+  become: yes
+  tasks:
+    - name: Install Redis
+      apt:
+        name: "{{item}}"
+      with_items:
+        - redis-server
+        - redis-tools
+
+    - name: Update Redis Bind IP
+      lineinfile:
+        dest: /etc/redis/redis.conf
+        line: "bind 192.168.0.254"
+        regexp: "bind 127.0.0.1"
+        backup: yes
+      notify: restart redis
+
+  handlers:
+    - name: restart redis
+      service:
+        name: redis-server
+        state: restarted
+
+- hosts: network
+  become: yes
+  tasks:
+    - name: Add Cumulus EA Repo
+      apt_repository:
+        repo: "{{item}}"
+        state: present
+      with_items:
+        - deb     http://repo3.cumulusnetworks.com/repo CumulusLinux-3-early-access cumulus
+        - deb-src http://repo3.cumulusnetworks.com/repo CumulusLinux-3-early-access cumulus
+
+    - name: Install cumulus-netq
+      apt:
+        name: cumulus-netq
+        update_cache: yes
+
+    - name: Add redis server IP
+      command: netq add server 192.168.0.254
+
+    - name: Start Netq
+      command: netq agent start
+
+    - name: Check that the agent is running
+      command: netq agent status
+      register: status
+      failed_when: "'Stopped.' in status.stdout"

@@ -1,0 +1,36 @@
+[internets]
+internet ansible_user=cumulus ansible_ssh_pass=CumulusLinux! ansible_host=192.168.0.253
+
+[leafs]
+leaf01 ansible_user=cumulus ansible_ssh_pass=CumulusLinux! ansible_become_pass=CumulusLinux!
+leaf02 ansible_user=cumulus ansible_ssh_pass=CumulusLinux! ansible_become_pass=CumulusLinux!
+leaf03 ansible_user=cumulus ansible_ssh_pass=CumulusLinux! ansible_become_pass=CumulusLinux!
+leaf04 ansible_user=cumulus ansible_ssh_pass=CumulusLinux! ansible_become_pass=CumulusLinux!
+exit01 ansible_user=cumulus ansible_ssh_pass=CumulusLinux! ansible_become_pass=CumulusLinux!
+exit02 ansible_user=cumulus ansible_ssh_pass=CumulusLinux! ansible_become_pass=CumulusLinux!
+
+[spines]
+spine01 ansible_user=cumulus ansible_ssh_pass=CumulusLinux! ansible_become_pass=CumulusLinux!
+spine02 ansible_user=cumulus ansible_ssh_pass=CumulusLinux! ansible_become_pass=CumulusLinux!
+
+[servers]
+server01 ansible_user=cumulus ansible_ssh_pass=CumulusLinux! ansible_become_pass=CumulusLinux!
+server02 ansible_user=cumulus ansible_ssh_pass=CumulusLinux! ansible_become_pass=CumulusLinux!
+server03 ansible_user=cumulus ansible_ssh_pass=CumulusLinux! ansible_become_pass=CumulusLinux!
+server04 ansible_user=cumulus ansible_ssh_pass=CumulusLinux! ansible_become_pass=CumulusLinux!
+
+[exits]
+exit01 ansible_user=cumulus ansible_ssh_pass=CumulusLinux! ansible_become_pass=CumulusLinux!
+exit02 ansible_user=cumulus ansible_ssh_pass=CumulusLinux! ansible_become_pass=CumulusLinux!
+
+[servers]
+server01 ansible_user=cumulus ansible_ssh_pass=CumulusLinux!
+server02 ansible_user=cumulus ansible_ssh_pass=CumulusLinux!
+server03 ansible_user=cumulus ansible_ssh_pass=CumulusLinux!
+server04 ansible_user=cumulus ansible_ssh_pass=CumulusLinux!
+
+[network:children]
+leafs
+spines
+exits
+internets

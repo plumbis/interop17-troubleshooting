@@ -1,0 +1,42 @@
+---
+# Tests Executed:
+#   - Verify Service Node IP is configured
+#   - Verify Service Node peers are configured
+#   - Verify the correct local IP is in use
+
+# Format for vxsnd vars file:
+#   vxsnd:
+#     anycast: "10.255.255.10"
+#     peers: ["10.100.100.1", "10.100.100.2"]
+#     spine01:
+#       local_address: "10.100.100.1"
+
+- name: Get Service Node Data
+  command: vxsndctl show -j
+  register: vxsndctl_output
+  when: vxsnd[ansible_hostname] is defined
+  changed_when: False
+
+- name: Process Service Node Data
+  set_fact:
+    configured_vxsnd: "{{vxsndctl_output.stdout | from_json}}"
+  when: vxsnd[ansible_hostname] is defined
+
+- name: Validate Service Node Anycast IP
+  assert:
+    that: configured_vxsnd["anycast"] == vxsnd.anycast
+    msg: "Service Node Anycast IP not correct on {{ansible_hostname}}. Expected {{vxsnd.anycast}}"
+  when: vxsnd[ansible_hostname] is defined
+
+- name: Validate Service Node Peers
+  assert:
+    that: ('{{item}}') in configured_vxsnd["peers"]
+    msg: "Service Node Peers not correct on {{ansible_hostname}}. Expecting {{item}}"
+  with_items: "{{vxsnd['peers'] | default([]) }}"
+  when: vxsnd[ansible_hostname] is defined
+
+- name: Validate Correct Service Node Local Address
+  assert:
+    that: configured_vxsnd["local"] == vxsnd[ansible_hostname].local_address
+    msg: "Service Node source (local) IP is incorrect on {{ansible_hostname}}. Expecting {{vxsnd[ansible_hostname].local_address}}"
+  when: vxsnd[ansible_hostname] is defined

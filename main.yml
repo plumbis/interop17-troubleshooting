@@ -1,0 +1,135 @@
+---
+- hosts: network
+  become: yes
+  pre_tasks:
+    # To prevent unexpected problems, define the minimum Cumulus Linux
+    # Release supported by this demo.
+    - name: Verify Minimum Software Version
+      assert:
+        that: "{{ansible_lsb.release | version_compare('3.0', '>=') }}"
+        msg: "Cumulus Linux version must be 3.0 or later. Version {{ansible_lsb.release}} detected"
+
+  tasks:
+    - name: Enable Quagga Zebra
+      lineinfile:
+        dest: /etc/quagga/daemons
+        line: "zebra=yes"
+        regexp: "zebra="
+      notify: restart quagga service
+
+    - name: Enable Quagga BGP
+      lineinfile:
+        dest: /etc/quagga/daemons
+        line: "bgpd=yes"
+        regexp: "bgpd="
+      notify: restart quagga service
+
+    - name: Copy Interfaces File
+      copy:
+        src: roles/{{ansible_hostname}}/interfaces
+        dest: /etc/network/interfaces
+        validate: ifup -a -s -i %s
+      notify: apply interface changes
+
+    - name: Copy Routing Configuration
+      copy:
+        src: roles/{{ansible_hostname}}/Quagga.conf
+        dest: /etc/quagga/Quagga.conf
+        validate: vtysh -C -f %s
+      notify: apply quagga config
+
+  handlers:
+    - name: restart vxlan service node
+      service:
+        name: vxsnd
+        state: restarted
+
+    - name: restart quagga service
+      service:
+        name: quagga
+        state: restarted
+
+    - name: apply interface changes
+      service:
+        name: networking
+        state: reloaded
+
+    - name: apply quagga config
+      service:
+        name: quagga
+        state: reloaded
+
+- hosts: spines
+  become: yes
+  tasks:
+    - name: Enable VxLAN Service Node
+      lineinfile:
+        dest: /etc/default/vxsnd
+        line: "START=yes"
+        regexp: "START="
+      notify: restart vxlan service node
+
+    - name: Configure VxLAN Service Node Anycast IP
+      lineinfile:
+        dest: /etc/vxsnd.conf
+        line: "svcnode_ip = 10.255.255.10"
+        regexp: '^\#?svcnode_ip ='
+      notify: restart vxlan service node
+
+    - name: Configure Spine01 VxLAN Service Node Source IP
+      lineinfile:
+        dest: /etc/vxsnd.conf
+        line: "src_ip = 10.100.100.1"
+        regexp: '^\#?src_ip ='
+      notify: restart vxlan service node
+      when: ansible_hostname == "spine01"
+
+    - name: Configure Spine02 VxLAN Service Node Source IP
+      lineinfile:
+        dest: /etc/vxsnd.conf
+        line: "src_ip = 10.100.100.2"
+        regexp: '^\#?src_ip ='
+      notify: restart vxlan service node
+      when: ansible_hostname == "spine02"
+
+    - name: Configure VxLAN Service Node Peers
+      lineinfile:
+        dest: /etc/vxsnd.conf
+        line: "svcnode_peers = 10.100.100.1 10.100.100.2"
+        regexp: '^\#?svcnode_peers ='
+      notify: restart vxlan service node
+
+  handlers:
+    - name: restart vxlan service node
+      service:
+        name: vxsnd
+        state: restarted
+
+- hosts: servers
+  become: yes
+  tasks:
+    - name: Copy Interface Config
+      copy:
+        src: roles/{{ansible_hostname}}/interfaces
+        dest: /etc/network/interfaces
+      register: reboot
+
+    - name: Correct LLDP Settings
+      lineinfile:
+        dest: /etc/lldpd.d/port_info.conf
+        line: "configure lldp portidsubtype ifname"
+        create: yes
+      notify: restart LLDP
+
+    - name: reboot
+      shell: sleep 1 && shutdown -r 0
+      poll: 0
+      async: 1
+      when: reboot.changed
+      ignore_errors: yes
+
+  handlers:
+    - name: restart LLDP
+      service:
+        name: lldpd
+        state: restarted

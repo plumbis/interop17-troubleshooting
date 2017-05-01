@@ -1,0 +1,19 @@
+---
+# Tests Executed:
+#   - Validates anycast IP /32 is configured
+
+# This test requires interface_test.yml to be run first.
+
+- name: Create Anycast IP and Mask (when required)
+  set_fact:
+    # This filter takes the IP address and appends "/32" to the end.
+    var_anycast_mask: "{{[l3_interfaces.loopback[ansible_hostname].anycast, '/32']|join('')}}"
+  # This task is skipped if the anycast variable is not set
+  when: l3_interfaces.loopback[ansible_hostname].anycast is defined
+
+- name: Validate the Anycast IP is configured (when required)
+  assert:
+    that: var_anycast_mask in configured_interfaces["lo"]["iface_obj"]["ip_address"]["allentries"]
+    msg: "Anycast IP not configured on {{ansible_hostname}}"
+  when: l3_interfaces.loopback[ansible_hostname].anycast is defined
+

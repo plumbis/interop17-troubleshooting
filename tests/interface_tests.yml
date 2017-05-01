@@ -1,0 +1,60 @@
+---
+# Tests Executed:
+#    - Verify Loopback IP /32 is configured
+#    - Verify expected physical interfaces exist
+
+# Expect var file format for L3 interfaces:
+#   l3_interfaces:
+#     peerlink:
+#       leaf01: "169.254.1.1"
+#       leaf02: "169.254.1.2"
+#       leaf03: "169.254.1.1"
+#       leaf04: "169.254.1.2"
+#       exit01: "169.254.1.1"
+#       exit02: "169.254.1.2"
+#
+#     loopback:
+#       spine01:
+#         ipv4: "10.100.100.1"
+#         anycast: "10.255.255.10"
+#
+# "anycast" is optional
+
+# Expected var file format for physicals:
+#   interfaces:
+#     leaf01: ["swp1", "swp2", "swp49", "swp50", "swp51", "swp52"]
+
+# Pull data from the device
+- name: Get Interface Data
+  command: net show interface json
+  register: interface_output
+  changed_when: False
+
+# Turn the data into json for parsing
+- name: Process Interface Data
+  set_fact:
+    configured_interfaces: "{{interface_output.stdout | from_json}}"
+
+# This set_fact may not be required, however, I was unable to figure out
+# How to get this filter to work in the following assert.
+# the vars do not include a mask.
+# the output returned by net show does.
+- name: Create Loopback IP and Mask
+  set_fact:
+    # This filter takes the IP address and appends "/32" to the end.
+    var_loopback_mask: "{{[l3_interfaces.loopback[ansible_hostname].ipv4, '/32']|join('')}}"
+
+- name: Validate the Loopback IP is configured
+  assert:
+    # Compare the var loopback against the IP in the net show json object
+    that: var_loopback_mask in configured_interfaces["lo"]["iface_obj"]["ip_address"]["allentries"]
+    msg: "Loopback IP not configured on {{ansible_hostname}} "
+
+# Confirm that the correct physical interfaces exist.
+- name: Validate the correct interfaces exist
+  assert:
+    # item is the output of the `with_items` iteration
+    # Ansible requires it to be wrapped in ('') for some reason.
+    that: ('{{item}}') in "{{configured_interfaces.keys()}}"
+    msg: "Expected Interfaces do not exist on {{ansible_hostname}} "
+  with_items: "{{interfaces[ansible_hostname]}}"

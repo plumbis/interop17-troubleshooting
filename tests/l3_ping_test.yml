@@ -1,0 +1,7 @@
+---
+- name: Ping Test
+  # Ping each loopback IP sourced from this loopback.
+  command: ping {{l3_interfaces.loopback[item].ipv4}} -I {{l3_interfaces.loopback[ansible_hostname].ipv4}} -c 1
+  with_items: "{{l3_interfaces.loopback}}"
+  # This with_items will provide a list of hostnames
+  changed_when: False

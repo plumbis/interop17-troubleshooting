@@ -1,0 +1,54 @@
+---
+# Tests Executed:
+#   - Verify expected VNIs are configured
+#   - Verify Service Node is configured
+#   - Verify Head End Replication end points have been discovered
+
+# Expected vars file format for vxrd:
+#   vxrd:
+#     vnis: [13, 24]
+#     service_node: "10.255.255.10"
+#     # These are the addresses to replicate to for HREP.
+#     # For VxLAN Active/Active it is the anycast address
+#     leaf01: ["10.10.10.3", "10.10.10.2"]
+
+
+- name: Get VxLAN Data
+  command: vxrdctl vxlans -j
+  register: vxrd_vxlans_output
+  when: vxrd[ansible_hostname] is defined
+  changed_when: False
+
+- name: Process VxLAN Data
+  set_fact:
+    configured_vxlans: "{{vxrd_vxlans_output.stdout | from_json}}"
+  when: vxrd[ansible_hostname] is defined
+
+# This ensures that all the expected VNIs are configured.
+# Does not check if extra VNIs are configured
+- name: Validate VNIs
+  assert:
+    that: ('{{item}}') in configured_vxlans.keys()
+    msg: "Configured VNIs does not match expected VNIs"
+  with_items: "{{vxrd.vnis}}"
+  when: vxrd[ansible_hostname] is defined
+
+# This will look at each VNI configured on the box and validate
+# that the service node is configured as expected
+- name: Validate Service Node
+  assert:
+    # {{item}} must be run through the jinja string filter or json gets unhappy.
+    that: configured_vxlans[{{item}}|string].svcnodeip == vxrd.service_node
+    msg: "LNV Service Node {{vxrd.service_node}} not found on {{ansible_hostname}}"
+  with_items: "{{configured_vxlans.keys() | default([]) }}"
+  when: vxrd[ansible_hostname] is defined
+
+# This validates that the list of head end replication end points
+# Exactly matches the list of expected head end replication endpoints
+- name: Validate Replication Endpoints
+  assert:
+    # Sort the lists bbefore comparing them so they are equal
+    that: configured_vxlans[{{item}}|string].hrep_addrs|sort == vxrd[ansible_hostname]|sort
+    msg: "List of LNV replication endpoints does not match {{vxrd[ansible_hostname]}}"
+  with_items: "{{configured_vxlans.keys() | default([]) }}"
+  when: vxrd[ansible_hostname] is defined
