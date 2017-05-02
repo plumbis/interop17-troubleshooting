@@ -63,8 +63,16 @@ def check_ospf_enabled(host, context):
         return True
 
 
-def get_ospf_interface(host, context):
-    ansible_command_string = ["ansible", host, "-o", "-a", "vtysh -c 'show ip ospf interface json'", "--become"]
+def check_ospf_enabled(my_host, my_port, remote_host, remote_port):
+    #get_ospf_interface(my_host)
+    #get_ospf_interface(remote_host)
+    pass
+
+
+def get_ospf_interface(host, port, context):
+
+    my_vtysh_command = "vtysh -c 'show ip ospf interface " + port + " json'"
+    ansible_command_string = ["ansible", host, "-o", "-a", vtysh_command, "--become"]
     process = subprocess.Popen(ansible_command_string, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     stdout, stderr = process.communicate()
@@ -72,14 +80,12 @@ def get_ospf_interface(host, context):
         assert False, "\nCommand: " + " ".join(ansible_command_string) + "\n" + "Ansible Error: " + stderr
 
     if stdout.find("{") <= 0:
-        assert False, "OSPF is not configured"
-    else:
-        return stdout[stdout.find("{"):]
-
+        assert False, "OSPF is not configured on " + host
 
 @given('OSPF is configured')
 def step_impl(context):
     parse_topology(context)
+    assert False, topology
     for host in topology.keys():
         check_ospf_enabled(host, context)
 
@@ -91,4 +97,10 @@ def step_impl(context):
     ospf_interface = {}
     for host in topology.keys():
         for interface in topology[host]:
-            assert False, topology[host][interface]
+            # interface is my interface (swp01)
+            # topology[host][interface] is the remote interface (swp51)
+            my_host = host
+            my_port = interface
+            remote_host = topology[host][interface].keys()  # Assumes one peer on the link
+            remote_port = topology[host][interface]
+            check_ospf_enabled(my_host, my_port, remote_host, remote_port, context)
