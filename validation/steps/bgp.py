@@ -20,7 +20,7 @@ Feature: Troubleshoot BGP
 
 
 def check_bgp_enabled(host, context):
-    ansible_command_string = ["ansible", host, "-o", "-a", command, "--become"]
+    ansible_command_string = ["ansible", host, "-o", "-a", "vtysh -c 'show ip bgp sum'", "--become"]
     process = subprocess.Popen(ansible_command_string, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     stdout, stderr = process.communicate()
