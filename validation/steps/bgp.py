@@ -27,7 +27,9 @@ def check_bgp_enabled(host, context):
     if stderr:
         assert False, "\nCommand: " + " ".join(ansible_command_string) + "\n" + "Ansible Error: " + stderr
     else:
-        assert False, stdout
+        # I'm lazy, let's just start at the opening { of json output
+        json_output = stdout[stdout.find("{"):]
+        assert False, json_output
 
 
 @given('BGP is configured')
