@@ -38,15 +38,15 @@ def parse_topology(context):
 
             # hosts["leaf01"] = {"swp51": {"spine01": "swp1"}}
             if left_hostname not in hosts:
-                hosts[left_hostname] = {left_host_port: {right_hostname: right_host_port}}
+                topology[left_hostname] = {left_host_port: {right_hostname: right_host_port}}
             else:
                 # We are adding an additional port to the host
-                hosts[left_hostname][left_host_port] = {right_hostname: right_host_port}
+                topology[left_hostname][left_host_port] = {right_hostname: right_host_port}
 
             if right_hostname not in hosts:
-                hosts[right_hostname] = {right_host_port: {left_hostname: left_host_port}}
+                topology[right_hostname] = {right_host_port: {left_hostname: left_host_port}}
             else:
-                hosts[right_hostname][right_host_port] = {right_host_port: {left_hostname: left_host_port}}
+                topology[right_hostname][right_host_port] = {right_host_port: {left_hostname: left_host_port}}
 
 
 def check_ospf_enabled(host, context):
