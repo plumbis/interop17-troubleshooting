@@ -80,7 +80,7 @@ def get_ospf_interface(host, context):
 @given('OSPF is configured')
 def step_impl(context):
     parse_topology(context)
-    for host in hosts.keys():
+    for host in topology.keys():
         check_ospf_enabled(host, context)
 
     assert True
