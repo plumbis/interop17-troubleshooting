@@ -55,7 +55,7 @@ def get_ospf_interface(host, context):
 
 @given('OSPF is configured')
 def step_impl(context):
-    parse_topology()
+    parse_topology(context)
 
 
 @then('the OSPF network type should match')
