@@ -43,7 +43,7 @@ def parse_topology(context):
                 # We are adding an additional port to the host
                 topology[left_hostname][left_host_port] = {right_hostname: right_host_port}
 
-            if right_hostname not in hosts:
+            if right_hostname not in topology:
                 topology[right_hostname] = {right_host_port: {left_hostname: left_host_port}}
             else:
                 topology[right_hostname][right_host_port] = {right_host_port: {left_hostname: left_host_port}}
@@ -89,6 +89,6 @@ def step_impl(context):
 @then('the OSPF network type should match')
 def step_impl(context):
     ospf_interface = {}
-    for host in hosts.keys():
+    for host in topology.keys():
         for interface in host.keys():
             assert False, interface
