@@ -37,7 +37,7 @@ def parse_topology(context):
             right_hostname = right_side[:right_side.find(":")].strip()
 
             # hosts["leaf01"] = {"swp51": {"spine01": "swp1"}}
-            if left_hostname not in hosts:
+            if left_hostname not in topology:
                 topology[left_hostname] = {left_host_port: {right_hostname: right_host_port}}
             else:
                 # We are adding an additional port to the host
