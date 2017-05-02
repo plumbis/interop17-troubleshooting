@@ -91,4 +91,4 @@ def step_impl(context):
     ospf_interface = {}
     for host in topology.keys():
         for interface in topology[host]:
-            assert False, interface
+            assert False, topology[host][interface]
