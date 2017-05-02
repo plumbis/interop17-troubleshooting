@@ -14,15 +14,39 @@ Scenario: Troubleshoot OSPF INIT Peers
     and OSPF authentication should match
     and OSPF peers should ping
 '''
-topology = """
+topology_string = """
             leaf01:swp51 -- spine01:swp1
-            leaf01:swp52 -- spine02:swp2
            """
+           # leaf01:swp52 -- spine02:swp2
+
+topology = {}
 
 
 def parse_topology(context):
-    for line in topology:
-        assert False, line
+    lines = topology.split("\n")
+
+    for line in lines:
+        if len(line.strip()) > 1:
+            left_side = line[:line.find("--")].strip()
+            right_side = line[line.find("--") + 2:].strip()
+
+            left_host_port = left_side[left_side.find(":") + 1:].strip()
+            left_hostname = left_side[:left_side.find(":")].strip()
+
+            right_host_port = right_side[right_side.find(":") + 1:].strip()
+            right_hostname = right_side[:right_side.find(":")].strip()
+
+            # hosts["leaf01"] = {"swp51": {"spine01": "swp1"}}
+            if left_hostname not in hosts:
+                hosts[left_hostname] = {left_host_port: {right_hostname: right_host_port}}
+            else:
+                # We are adding an additional port to the host
+                hosts[left_hostname][left_host_port] = {right_hostname: right_host_port}
+
+            if right_hostname not in hosts:
+                hosts[right_hostname] = {right_host_port: {left_hostname: left_host_port}}
+            else:
+                hosts[right_hostname][right_host_port] = {right_host_port: {left_hostname: left_host_port}}
 
 
 def check_ospf_enabled(host, context):
@@ -34,7 +58,7 @@ def check_ospf_enabled(host, context):
         assert False, "\nCommand: " + " ".join(ansible_command_string) + "\n" + "Ansible Error: " + stderr
 
     if stdout.find("{") <= 0:
-        assert False, "OSPF is not configured"
+        assert False, "OSPF is not configured on " + host
     else:
         return True
 
@@ -56,8 +80,15 @@ def get_ospf_interface(host, context):
 @given('OSPF is configured')
 def step_impl(context):
     parse_topology(context)
+    for host in hosts.keys():
+        check_ospf_enabled(host, context)
+
+    assert True
 
 
 @then('the OSPF network type should match')
 def step_impl(context):
-    assert True
+    ospf_interface = {}
+    for host in hosts.keys():
+        for interface in host.keys():
+            assert False, interface
