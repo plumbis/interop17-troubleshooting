@@ -23,7 +23,7 @@ topology = {}
 
 
 def parse_topology(context):
-    lines = topology.split("\n")
+    lines = topology_string.split("\n")
 
     for line in lines:
         if len(line.strip()) > 1:
