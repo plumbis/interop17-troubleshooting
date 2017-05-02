@@ -20,6 +20,11 @@ topology = """
            """
 
 
+def parse_topology(context):
+    for line in topology:
+        assert False, line
+
+
 def check_ospf_enabled(host, context):
     ansible_command_string = ["ansible", host, "-o", "-a", "vtysh -c 'show ip ospf json'", "--become"]
     process = subprocess.Popen(ansible_command_string, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -50,7 +55,7 @@ def get_ospf_interface(host, context):
 
 @given('OSPF is configured')
 def step_impl(context):
-    assert False, topology
+    parse_topology()
 
 
 @then('the OSPF network type should match')
