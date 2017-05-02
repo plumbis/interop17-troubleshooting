@@ -17,11 +17,11 @@
         regexp: "zebra="
       notify: restart quagga service
 
-    - name: Enable Quagga BGP
+    - name: Enable Quagga OSPF
       lineinfile:
         dest: /etc/quagga/daemons
-        line: "bgpd=yes"
-        regexp: "bgpd="
+        line: "ospfd=yes"
+        regexp: "ospfd="
       notify: restart quagga service
 
     - name: Copy Interfaces File
