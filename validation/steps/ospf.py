@@ -87,8 +87,8 @@ def check_ospf_interfaces_match(context):
         for interface in topology[host]:
             remote_host = topology[host][interface].keys()[0]
             remote_iface = topology[host][interface][remote_host]
-            my_ip = ipaddress.ip_network(unicode(ospf_interfaces[host][interface]["ipAddress"] + "/" + str(ospf_interfaces[host][interface]["ipAddressPrefixlen"])))
-            remote_ip = ipAddress.ip_network(unicode(ospf_interfaces[remote_host][remote_iface]["ipAddress"] + "/" + str(ospf_interfaces[remote_host][remote_iface]["ipAddressPrefixlen"])))
+            my_ip = ipaddress.ip_interface(unicode(ospf_interfaces[host][interface]["ipAddress"] + "/" + str(ospf_interfaces[host][interface]["ipAddressPrefixlen"])))
+            remote_ip = ipAddress.ip_interface(unicode(ospf_interfaces[remote_host][remote_iface]["ipAddress"] + "/" + str(ospf_interfaces[remote_host][remote_iface]["ipAddressPrefixlen"])))
 
             assert False, my_ip + remote_ip
 
