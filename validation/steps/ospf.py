@@ -204,7 +204,7 @@ def step_impl(context):
                 my_mtu = ospf_interfaces[host][interface]["mtuBytes"]
 
                 ansible_command_string = ["ansible", host, "-a",
-                                          str("ping " + remote_ip + "-c 1 -s " + str(my_mtu)),
+                                          str("ping " + remote_ip + " -c 1 -s " + str(my_mtu)),
                                           "--become"]
 
                 process = subprocess.Popen(ansible_command_string, stdout=subprocess.PIPE,
