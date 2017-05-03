@@ -204,7 +204,7 @@ def step_impl(context):
                 my_mtu = ospf_interfaces[host][interface]["mtuBytes"]
 
                 ansible_command_string = ["ansible", host, "-a",
-                                          str("ping" + remote_ip + "-c 1 -s " + str(my_mtu)),
+                                          str("ping " + remote_ip + "-c 1 -s " + str(my_mtu)),
                                           "--become"]
 
                 process = subprocess.Popen(ansible_command_string, stdout=subprocess.PIPE,
@@ -215,8 +215,6 @@ def step_impl(context):
                     assert False, "\nCommand: " + " ".join(ansible_command_string) + "\n" + "Ansible Error: " + stderr
 
                 if not process.returncode == 0:
-                    assert False, ansible_command_string + "\n" + str(process.returncode) + stdout
-
-                    #"Ping from " + host + " " + my_ip + \
-                    #    " to " + remote_host + " " + remote_ip + " failed."
+                    assert False, "Ping from " + host + " " + my_ip + \
+                        " to " + remote_host + " " + remote_ip + " failed."
     assert True
