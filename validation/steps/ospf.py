@@ -12,8 +12,8 @@ import ipaddress
 Scenario: Troubleshoot OSPF INIT Peers
     Given OSPF is configured
     then the OSPF network type should match
-    and OSPF authentication should match
-    and OSPF peers should ping
+    and MTU should match
+    and OSPF peers should ping 224.0.0.5
 '''
 topology_string = """
             leaf01:swp51 -- spine01:swp1
@@ -121,8 +121,26 @@ def step_impl(context):
             remote_network = ospf_interfaces[remote_host][remote_iface]["networkType"]
 
             if not my_network == remote_network:
-                assert False, "OSPF network types do not match. " + host + " " + interface + \
+                assert False, "OSPF network types do not match. \n" + host + " " + interface + \
                     " configured as " + my_network + ". " + remote_host + " " + remote_iface + \
                     " configured as " + remote_network + "."
 
     assert True
+
+
+@then('MTU should match')
+def step_impl(context):
+    for host in topology:
+            for interface in topology[host]:
+                remote_host = topology[host][interface].keys()[0]
+                remote_iface = topology[host][interface][remote_host]
+                my_mtu = ospf_interfaces[host][interface]["mtuBytes"]
+                remote_mtu = ospf_interfaces[remote_host][remote_iface]["mtuBytes"]
+
+                if not my_network == remote_network:
+                    assert False, "Interface MTUs do not match. \n" + host + " " + interface + \
+                        " configured as " + my_mtu + ". " + remote_host + " " + remote_iface + \
+                        " configured as " + remote_mtu + "."
+
+    assert True
+
