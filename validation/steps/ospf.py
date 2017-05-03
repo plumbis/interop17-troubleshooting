@@ -93,7 +93,7 @@ def check_ospf_interfaces_match(context):
             if not my_ip.network == remote_ip.network:
                 assert False, host + " interface " + interface + " with IP " + \
                     str(my_ip) + " not on the same subnet as " + remote_host + \
-                    " " + remote_iface + "(IP " + str(remote_ip) + ")"
+                    " " + remote_iface + " (" + str(remote_ip) + ")"
 
 
 @given('OSPF is configured')
@@ -113,4 +113,16 @@ def step_impl(context):
 
 @then('the OSPF network type should match')
 def step_impl(context):
+    for host in topology:
+        for interface in topology[host]:
+            remote_host = topology[host][interface].keys()[0]
+            remote_iface = topology[host][interface][remote_host]
+            my_network = ospf_interfaces[host][interface]["networkType"]
+            remote_network = ospf_interfaces[remote_host][remote_iface]["networkType"]
+
+            if not my_network == remote_network:
+                assert False, "OSPF network types do not match. " + host + " " + interface + \
+                    " configured as " + my_network + ". " + remote_host + " " + remote_iface + \
+                    " configured as " + remote_network + "."
+
     assert True
