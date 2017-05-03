@@ -17,7 +17,7 @@ iface eth0 inet dhcp
 auto swp1
 iface swp1
   alias to Leaf01
-  172.16.252.2/30
+  address 172.16.252.2/30
 
 # Port to Leaf02
 auto swp2
