@@ -1,4 +1,4 @@
-- hosts: leaf01
+- hosts: leaf01,spine01
   become: yes
   tasks:
     - name: Copy Routing Configuration
