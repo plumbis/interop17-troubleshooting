@@ -1,10 +1,6 @@
 from behave import *
-import yaml
 import json
 import subprocess
-import time
-import shutil
-import os
 import ipaddress
 
 
@@ -15,6 +11,7 @@ Scenario: Troubleshoot OSPF INIT Peers
     and MTU should match
     and OSPF peers should ping 224.0.0.5
 '''
+
 topology_string = """
             leaf01:swp51 -- spine01:swp1
            """
@@ -67,15 +64,20 @@ def get_ospf_interfaces(context):
     Populates the ospf_interfaces dict
     '''
     for host in topology.keys():
+        # This is the ansible ad hoc command to run at the command line
         ansible_command_string = ["ansible", host, "-a",
                                   "vtysh -c 'show ip ospf interface json'", "--become"]
+
+        # Run the command
         process = subprocess.Popen(ansible_command_string, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
 
+        # Get the output from the OS
         stdout, stderr = process.communicate()
         if stderr:
             assert False, "\nCommand: " + " ".join(ansible_command_string) + "\n" + "Ansible Error: " + stderr
 
+        # We expect JSON output starting with {, if that isn't there, something's wrong.
         if stdout.find("{") <= 0:
             assert False, "OSPF is not configured on " + host
 
@@ -83,10 +85,17 @@ def get_ospf_interfaces(context):
 
 
 def check_ospf_interfaces_match(context):
+    '''
+    Loop over the topology and verify that adjacent
+    OSPF interfaces are configured in the same subnet
+    '''
     for host in topology:
         for interface in topology[host]:
             remote_host = topology[host][interface].keys()[0]
             remote_iface = topology[host][interface][remote_host]
+
+            # my IP address. Use ip_interface to support IP + Mask
+            # also the ipaddress class only takes unicode inputs, not raw strings
             my_ip = ipaddress.ip_interface(unicode(ospf_interfaces[host][interface]["ipAddress"] + "/" + str(ospf_interfaces[host][interface]["ipAddressPrefixlen"])))
             remote_ip = ipaddress.ip_interface(unicode(ospf_interfaces[remote_host][remote_iface]["ipAddress"] + "/" + str(ospf_interfaces[remote_host][remote_iface]["ipAddressPrefixlen"])))
 
@@ -113,11 +122,26 @@ def step_impl(context):
 
 @then('the OSPF network type should match')
 def step_impl(context):
+    '''
+    Verify that the configured OSPF network type (Broadcast, point to point)
+    is the same on both sides of the link.
+    '''
+
+    # Loop over every host in the topology
     for host in topology:
+        # Loop over every interface that host has
         for interface in topology[host]:
+
+            # This will give us the remote hostname on that link
             remote_host = topology[host][interface].keys()[0]
+
+            # and the remote interface name
             remote_iface = topology[host][interface][remote_host]
+
+            # Set my OSPF network type
             my_network = ospf_interfaces[host][interface]["networkType"]
+
+            # And the remote OSPF network
             remote_network = ospf_interfaces[remote_host][remote_iface]["networkType"]
 
             if not my_network == remote_network:
@@ -130,6 +154,10 @@ def step_impl(context):
 
 @then('MTU should match')
 def step_impl(context):
+    '''
+    verify that both OSPF end points have the same MTU
+    '''
+
     for host in topology:
             for interface in topology[host]:
                 remote_host = topology[host][interface].keys()[0]
@@ -137,10 +165,56 @@ def step_impl(context):
                 my_mtu = ospf_interfaces[host][interface]["mtuBytes"]
                 remote_mtu = ospf_interfaces[remote_host][remote_iface]["mtuBytes"]
 
-                if not my_network == remote_network:
+                if not my_mtu == remote_mtu:
                     assert False, "Interface MTUs do not match. \n" + host + " " + interface + \
                         " configured as " + my_mtu + ". " + remote_host + " " + remote_iface + \
                         " configured as " + remote_mtu + "."
 
     assert True
 
+
+@then('RouterIDs should not match')
+def step_impl(context):
+    '''
+    verify that the router IDs of the OSPF nodes DO NOT match
+    '''
+    for host in topology:
+            for interface in topology[host]:
+                remote_host = topology[host][interface].keys()[0]
+                remote_iface = topology[host][interface][remote_host]
+                my_rid = ospf_interfaces[host][interface]["routerId"]
+                remote_rid = ospf_interfaces[remote_host][remote_iface]["routerId"]
+
+                if my_rid == remote_rid:
+                    assert False, "RouterIDs on " + host + " and " + remote_host + " are duplicates."
+
+    assert True
+
+
+@then('OSPF peers should ping at MTU')
+def step_impl(context):
+    for host in topology:
+            for interface in topology[host]:
+                remote_host = topology[host][interface].keys()[0]
+                remote_iface = topology[host][interface][remote_host]
+                my_ip = ospf_interfaces[host][interface]["ipAddress"]
+                remote_ip = ospf_interfaces[remote_host][remote_iface]["ipAddress"]
+
+                # We don't need to compare MTUs since we already verified they match
+                my_mtu = ospf_interfaces[host][interface]["mtuBytes"]
+
+                ansible_command_string = ["ansible", host, "-a",
+                                          str("ping" + remote_ip + "-c 1 -s " + str(my_mtu)),
+                                          "--become"]
+
+                process = subprocess.Popen(ansible_command_string, stdout=subprocess.PIPE,
+                                           stderr=subprocess.PIPE)
+
+                stdout, stderr = process.communicate()
+                if stderr:
+                    assert False, "\nCommand: " + " ".join(ansible_command_string) + "\n" + "Ansible Error: " + stderr
+
+                if not process.returncode == 0:
+                    assert False, "Ping from " + host + " " + my_ip + \
+                        " to " + remote_host + " " + remote_ip + " failed."
+    assert True

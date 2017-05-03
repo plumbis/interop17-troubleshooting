@@ -4,4 +4,5 @@ Feature: Troubleshoot OSPF
     Given OSPF is configured
     then the OSPF network type should match
     and MTU should match
-    and OSPF peers should ping
+    and RouterIDs should not match
+    and OSPF peers should ping at MTU
