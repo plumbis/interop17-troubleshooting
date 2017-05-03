@@ -14,7 +14,7 @@ Scenario: Troubleshoot OSPF INIT Peers
 
 topology_string = """
             leaf01:swp51 -- spine01:swp1
-            leaf01:swp52 -- spine02:swp2
+            leaf01:swp52 -- spine02:swp1
            """
 
 
