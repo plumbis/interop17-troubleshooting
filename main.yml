@@ -1,5 +1,5 @@
 ---
-- hosts: leaf01,spine01
+- hosts: leaf01,spine01,spine02
   become: yes
   pre_tasks:
     # To prevent unexpected problems, define the minimum Cumulus Linux
