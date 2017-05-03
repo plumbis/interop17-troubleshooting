@@ -167,8 +167,8 @@ def step_impl(context):
 
                 if not my_mtu == remote_mtu:
                     assert False, "Interface MTUs do not match. \n" + host + " " + interface + \
-                        " configured as " + my_mtu + ". " + remote_host + " " + remote_iface + \
-                        " configured as " + remote_mtu + "."
+                        " configured as " + str(my_mtu) + ". " + remote_host + " " + remote_iface + \
+                        " configured as " + str(remote_mtu) + "."
 
     assert True
 
