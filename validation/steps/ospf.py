@@ -215,6 +215,8 @@ def step_impl(context):
                     assert False, "\nCommand: " + " ".join(ansible_command_string) + "\n" + "Ansible Error: " + stderr
 
                 if not process.returncode == 0:
-                    assert False, "Ping from " + host + " " + my_ip + \
-                        " to " + remote_host + " " + remote_ip + " failed."
+                    assert False, process.returncode + stdout
+
+                    #"Ping from " + host + " " + my_ip + \
+                    #    " to " + remote_host + " " + remote_ip + " failed."
     assert True
