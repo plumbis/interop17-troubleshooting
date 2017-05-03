@@ -83,6 +83,10 @@ def get_ospf_interfaces(context):
 
         ospf_interfaces[host] = json.loads(stdout[stdout.find("{"):])
 
+        for interface in topology[host]:
+            if interface not in ospf_interfaces[host]:
+                assert False, "OSPF not configured on " + host + " " + interface
+
 
 def check_ospf_interfaces_match(context):
     '''
