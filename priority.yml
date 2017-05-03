@@ -1,0 +1,15 @@
+- hosts: leaf01
+  become: yes
+  tasks:
+    - name: Copy Routing Configuration
+      copy:
+        src: roles/{{ansible_hostname}}/Quagga.conf.priority
+        dest: /etc/quagga/Quagga.conf
+        validate: vtysh -C -f %s
+      notify: apply quagga config
+
+  handlers:
+    - name: apply quagga config
+      service:
+        name: quagga
+        state: reloaded

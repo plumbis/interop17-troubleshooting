@@ -1,0 +1,15 @@
+- hosts: leaf01
+  become: yes
+  tasks:
+    - name: Copy Interfaces File
+      copy:
+        src: roles/{{ansible_hostname}}/interfaces.subnet-mismatch
+        dest: /etc/network/interfaces
+        validate: ifup -a -s -i %s
+      notify: apply interface changes
+
+  handlers:
+    - name: apply interface changes
+      service:
+        name: networking
+        state: reloaded

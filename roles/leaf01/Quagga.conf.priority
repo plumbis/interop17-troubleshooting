@@ -1,0 +1,33 @@
+username cumulus nopassword
+!
+service integrated-vtysh-config
+!
+log file /var/log/quagga/quagga.log
+!
+log timestamp precision 6
+!
+interface lo
+ ip ospf area 0.0.0.0
+!
+interface swp51
+ ip ospf area 0.0.0.0
+ ip ospf network point-to-point
+ ip pim sm
+ ip ospf priority 0
+!
+interface swp52
+ ip ospf area 0.0.0.0
+ ip ospf network point-to-point
+ ip pim sm
+!
+router ospf
+ ospf router-id 10.0.0.11
+ log-adjacency-changes detail
+ timers throttle spf 5 100 500
+ timers lsa min-arrival 50
+ passive-interface default
+ no passive-interface swp51
+ no passive-interface swp52
+!
+line vty
+!
