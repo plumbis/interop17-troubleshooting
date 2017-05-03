@@ -1,14 +1,6 @@
 ---
 - hosts: leaf01,spine01,spine02
   become: yes
-  pre_tasks:
-    # To prevent unexpected problems, define the minimum Cumulus Linux
-    # Release supported by this demo.
-    - name: Verify Minimum Software Version
-      assert:
-        that: "{{ansible_lsb.release | version_compare('3.0', '>=') }}"
-        msg: "Cumulus Linux version must be 3.0 or later. Version {{ansible_lsb.release}} detected"
-
   tasks:
     - name: Enable Quagga Zebra
       lineinfile:
@@ -39,11 +31,6 @@
       notify: apply quagga config
 
   handlers:
-    - name: restart vxlan service node
-      service:
-        name: vxsnd
-        state: restarted
-
     - name: restart quagga service
       service:
         name: quagga
