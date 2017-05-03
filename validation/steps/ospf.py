@@ -215,7 +215,24 @@ def step_impl(context):
                     assert False, "\nCommand: " + " ".join(ansible_command_string) + "\n" + "Ansible Error: " + stderr
 
                 if not process.returncode == 0:
-                    assert False, stdout
-                    #"Ping from " + host + " " + my_ip + \
-                    #    " to " + remote_host + " " + remote_ip + " failed."
+                    assert False, "Ping from " + host + " " + my_ip + \
+                        " to " + remote_host + " " + remote_ip + " failed."
+    assert True
+
+@then('a priority should be greater than 0')
+def step_impl(context):
+    '''
+    verify that someone has a priority >0 to allow for DR election
+    '''
+    for host in topology:
+            for interface in topology[host]:
+                remote_host = topology[host][interface].keys()[0]
+                remote_iface = topology[host][interface][remote_host]
+                my_priority = ospf_interfaces[host][interface]["priority"]
+                remote_priority = ospf_interfaces[remote_host][remote_iface]["priority"]
+
+                if max(my_priority, remote_priority) <= 0:
+                    assert False, host + " " + interface + " and " + remote_host + " " + \
+                        remote_iface + " priorities are 0. A DR can not be elected"
+
     assert True
