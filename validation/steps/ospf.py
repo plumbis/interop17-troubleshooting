@@ -81,7 +81,7 @@ def get_ospf_interfaces(context):
         if stdout.find("{") <= 0:
             assert False, "OSPF is not configured on " + host
 
-        ospf_data[host] = json.loads(stdout[find("{"):])
+        ospf_data[host] = json.loads(stdout[stdout.find("{"):])
 
 
 def check_ospf_interfaces_match(context):
