@@ -90,8 +90,7 @@ def check_ospf_interfaces_match(context):
             my_ip = ipaddress.ip_interface(unicode(ospf_interfaces[host][interface]["ipAddress"] + "/" + str(ospf_interfaces[host][interface]["ipAddressPrefixlen"])))
             remote_ip = ipaddress.ip_interface(unicode(ospf_interfaces[remote_host][remote_iface]["ipAddress"] + "/" + str(ospf_interfaces[remote_host][remote_iface]["ipAddressPrefixlen"])))
 
-            assert False, my_ip + remote_ip
-
+            assert False, str(my_ip.network_address) + str(remote_ip.network_address)
 
 
 @given('OSPF is configured')
