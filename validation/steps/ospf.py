@@ -90,7 +90,10 @@ def check_ospf_interfaces_match(context):
             my_ip = ipaddress.ip_interface(unicode(ospf_interfaces[host][interface]["ipAddress"] + "/" + str(ospf_interfaces[host][interface]["ipAddressPrefixlen"])))
             remote_ip = ipaddress.ip_interface(unicode(ospf_interfaces[remote_host][remote_iface]["ipAddress"] + "/" + str(ospf_interfaces[remote_host][remote_iface]["ipAddressPrefixlen"])))
 
-            assert False, str(my_ip.network) + str(remote_ip.network)
+            if not my_ip.network == remote_ip.network:
+                assert False, host + " interface " + interface + " with IP " + \
+                    my_ip + " not on the same subnet as " + remote_host + \
+                    " " + remote_iface + "(IP " + remote_ip + ")"
 
 
 @given('OSPF is configured')
