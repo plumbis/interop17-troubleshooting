@@ -92,8 +92,8 @@ def check_ospf_interfaces_match(context):
 
             if not my_ip.network == remote_ip.network:
                 assert False, host + " interface " + interface + " with IP " + \
-                    my_ip + " not on the same subnet as " + remote_host + \
-                    " " + remote_iface + "(IP " + remote_ip + ")"
+                    str(my_ip) + " not on the same subnet as " + remote_host + \
+                    " " + remote_iface + "(IP " + str(remote_ip) + ")"
 
 
 @given('OSPF is configured')
