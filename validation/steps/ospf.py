@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 from behave import *
 import yaml
 import json
@@ -69,7 +67,7 @@ def get_ospf_interfaces(context):
     Populates the ospf_interfaces dict
     '''
     for host in topology.keys():
-        ansible_command_string = ["ansible", host, "-o", "-a",
+        ansible_command_string = ["ansible", host, "-a",
                                   "vtysh -c 'show ip ospf interface json'", "--become"]
         process = subprocess.Popen(ansible_command_string, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
@@ -81,8 +79,7 @@ def get_ospf_interfaces(context):
         if stdout.find("{") <= 0:
             assert False, "OSPF is not configured on " + host
 
-        assert False, json.load(stdout[stdout.find("{"):])
-        #ospf_data[host] = json.loads()
+        ospf_data[host] = json.loads(stdout[stdout.find("{"):])
 
 
 def check_ospf_interfaces_match(context):
@@ -90,8 +87,8 @@ def check_ospf_interfaces_match(context):
         for interface in topology[host]:
             remote_host = topology[host][interface].keys()[0]
             remote_iface = topology[host][interface][remote_host]
-            my_ip = ipaddress.ip_address(ospf_interfaces[host][interface]["ipAddress"] + "/" + ospf_interfaces[host][interface]["ipAddressPrefixlen"])
-            remote_ip = ipAddress.ipAddress(ospf_interfaces[remote_host][remote_iface]["ipAddress"] + "/" + ospf_interfaces[remote_host][remote_iface]["ipAddressPrefixlen"])
+            my_ip = ipaddress.ip_address(unicode(ospf_interfaces[host][interface]["ipAddress"] + "/" + ospf_interfaces[host][interface]["ipAddressPrefixlen"]))
+            remote_ip = ipAddress.ipAddress(unicode(ospf_interfaces[remote_host][remote_iface]["ipAddress"] + "/" + ospf_interfaces[remote_host][remote_iface]["ipAddressPrefixlen"]))
 
             assert False, my_ip + remote_ip
 
