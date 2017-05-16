@@ -1,20 +1,26 @@
-# cldemo-vxlan
+# Automated OSPF Troubleshooting
 
-This demonstrates using LNV in the reference topology with Active-Active VxLAN.
+![Topology](topology.png)
 
-Each server has a bond to each local switch pair.
 
-There are two VxLAN Domains (VNIs):
- Server01, Server03, Internet in VLAN 13, VNI13
- Server02, Server04, Internet in VLAN 24, VNI24
+This shows an example of how to troubleshoot OSPF neighbors.
 
-BGP Unnumbered is used in the fabric.
+This uses the [Behave](https://pythonhosted.org/behave/) testing lanuage and python to accomplish this.
 
-Spine01 and Spine02 are anycast LNV Service Nodes.
+The file `validation/steps/ospf.py` has the code that accomplishes this.
 
-To configure the lab use
-`ansible-playbook main.yml`
+As a pre-requisite a topology diagram is required. For this proof of concept I use a static topology diagram within the ospf.py file.
 
-This lab also contains post-deploy validation playbooks.
-To validate the lab after deploy, run
-`ansible-playbook tests/test.yml`
+This topology diagram is in the Graph Discription Language [DOT](https://docs.cumulusnetworks.com/display/DOCS/Prescriptive+Topology+Manager+-+PTM)
+
+To use this, the simplest way is to use the [Cumulus Reference Topology](https://github.com/cumulusnetworks/cldemo-vagrant).
+
+On the out of band management server `sudo pip install behave` to load the Behave testing libraries
+
+Clone this project to the oob-mgmt-server
+Run `behave validation/ospf.feature` to run the test
+
+The Ansible playbook `main.yml` will reset the configuration of the lab.
+
+The other Ansible playbooks will create faults that show the function of the auotmated troubleshooting.
+
